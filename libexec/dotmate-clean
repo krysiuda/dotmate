@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+#
+# #synopsis:
+# Remove all files in the dotmate output directory
+# #description:
+# Removes all (generated) dotfiles in dotmate output directory.
+# 
+# --dry-run do not perform any opertions, no files, nor links will change
+#   --draft perform opertions on the draft directory only, no output files nor links will change
+# #usage:
+# [--dry-run|--draft]
+# #
+#
+
+switch="$1"
+case "$switch" in
+"" )
+	out=out
+	;;
+"--dry-run" )
+	dryrun=1
+	;;
+"--draft" )
+	out=draft
+	;;
+* )
+	die "unknown switch '$switch'"
+	;;
+esac
+
+if [ -z $dryrun ]
+then
+	debug "removing directory %s\n" $out
+	rm -rf $out
+	debug "creating directory %s\n" $out
+	mkdir $out
+fi
+

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# #synopsis:
+# Shows dotmate version number
+# #description:
+# Displays the version number of this dotmate release.
+# #usage:
+# #
+#
+
+echo ${basename} 0.1

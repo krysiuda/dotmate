@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+#
+# #synopsis:
+# Describe command line options and commands
+# #description:
+# Displays a description of dotmate commands listed as parameters.
+# 
+#       --usage  displays the possible command line parameters and options
+# --description  displays only the description
+#        --full  displays command synopsis, usage and full description
+# 
+# With no options given, displays usage and description.
+# With no commands given, displays description for "help" command.
+# #usage:
+# [--usage|--short|--full] command...
+# #
+#
+
+usage=1
+synopsis=
+description=1
+
+switch="$1"
+case "$switch" in
+"--usage" )
+  usage=1
+  synopsis=
+  description=
+  shift
+  ;;
+"--short" )
+  usage=
+  synopsis=1
+  description=
+  shift
+  ;;
+"--full" )
+  usage=1
+  synopsis=1
+  description=1
+  shift
+  ;;
+"--"* )
+	die "unknown switch '$switch'"
+	;;
+esac
+
+catcut() {
+  cat $1 | sed -n 's/^# \(.*\)$/\1/mp' | sed -n "/#$2:/,/#/{//!p;}"
+}
+
+printhelp() {
+  if [ ! -x "$execpath" ]
+  then
+  	die "unknown command '$command'"
+  fi
+  if [ -n "$synopsis" ]
+  then
+    text=$(catcut $execpath 'synopsis')
+    textlen=$(echo $text | wc -l)
+    if [ $textlen -gt 0 ]
+    then
+      printf "${colorbold}%15s${colordefault}  %s\n" $command "$text"
+    fi
+  fi
+  if [ -n "$usage" ]
+  then
+    text=$(catcut $execpath 'usage')
+    textlen=$(echo $text | wc -l)
+    if [ $textlen -gt 0 ]
+    then
+      printf "Usage:\n  %s ${colorbold}%s${colordefault} %s\n\n" $basename $command "$text"
+    fi
+  fi
+  if [ -n "$description" ]
+  then
+    text=$(catcut $execpath 'description')
+    textlen=$(echo $text | wc -l)
+    if [ $textlen -gt 0 ]
+    then
+      printf '%s\n\n' "$text"
+    fi
+  fi
+}
+
+if [ $# -lt 1 ]
+then
+	versionpath=${basedir}/${basename}-version
+	source "$versionpath"
+	echo
+  execpath=${basedir}/${basename}
+  printhelp
+	echo "Try \"dotmate commands\" or \"dotmate help\""
+	echo
+	helppath=${basedir}/${basename}-help
+	source "$helppath" --short commands help
+fi
+
+while [ $# -gt 0 ]
+do
+  command=$1
+  execpath=${basedir}/${basename}-${command}
+  printhelp
+  shift
+done
+

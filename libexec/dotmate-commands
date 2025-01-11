@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# #synopsis:
+# Lists all available dotmate commands
+# #description:
+# Useful remembering what are the possible things dotmate can do you for.
+# #usage:
+# #
+#
+
+basenamelen=$(($(echo $basename | wc -c) + 1))
+commands=$(find ${basedir}/ -type f -name ${basename}-* -executable -printf '%f\n' | cut -c ${basenamelen}- | sort)
+helppath=${basedir}/${basename}-help
+for command in $commands
+do
+  source "$helppath" --short $command
+done
+

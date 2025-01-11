@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#
+#
+# #synopsis:
+# Performs in order: unlink, clean, generate, link
+# #description:
+# Unlinks existing dotfiles, cleans (removes) all generated files, generates the files, finally links all generated files.
+# 
+# --dry-run do not perform any opertions, no files, nor links will change
+#   --draft perform opertions on the draft directory only, no output files nor links will change
+# #usage:
+# [--dry-run|--draft]
+# #
+#
+
+switch="$1"
+
+case "$switch" in
+"--dry-run" )
+	dryrun=1
+	;;
+"--draft" )
+  draft=1
+  ;;
+"" )
+  ;;
+* )
+	die "unknown switch '$switch'"
+	;;
+esac
+
+unlinkpath=${basedir}/${basename}-unlink
+cleanpath=${basedir}/${basename}-clean
+generatepath=${basedir}/${basename}-generate
+linkpath=${basedir}/${basename}-link
+
+[ -z $draft ] && [ -n $dryrun ] && source "$unlinkpath" --dry-run
+[ -z $draft ] && [ -z $dryrun ] && source "$unlinkpath"
+
+[ -n $draft ] &&                   source "$cleanpath" --draft
+[ -z $draft ] && [ -n $dryrun ] && source "$cleanpath" --dry-run
+[ -z $draft ] && [ -z $dryrun ] && source "$cleanpath"
+
+[ -n $draft ] &&                   source "$generatepath" --draft "$@"
+[ -z $draft ] && [ -n $dryrun ] && source "$generatepath" --dry-run "$@"
+[ -z $draft ] && [ -z $dryrun ] && source "$generatepath" "$@"
+
+[ -z $draft ] && [ -n $dryrun ] && source "$linkpath" --dry-run
+[ -z $draft ] && [ -z $dryrun ] && source "$linkpath"
+

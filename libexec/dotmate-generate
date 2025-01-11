@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+#
+# #synopsis:
+# Build dotfiles in the dotmate output directory
+# #description:
+# Removes symlinks in user's home directory leading to generated dotfiles in dotmate output directory
+# 
+# --dry-run do not perform any opertions, no files, nor links will change
+#   --draft perform opertions on the draft directory only, no output files nor links will change
+# #usage:
+# [--dry-run|--draft] profile...
+# #
+#
+
+switch="$1"
+case "$switch" in
+"--dry-run" )
+	out=draft
+	dryrun=1
+	shift
+	;;
+"--draft" )
+	out=draft
+	shift
+	;;
+"--"* )
+	die "unknown switch '$switch'"
+	;;
+* )
+	out=out
+	;;
+esac
+
+genprofile() {
+	regex="profiles/\([^/]+/\)+[0-9]+-.+"
+	capture="s/^((.+\/)*)[0-9]+-(.+)$/\2\3/p"
+  files=$(find $* -regex $regex -type f -printf '%P\n' | sed -En $capture | sort | uniq)
+  for file in $files
+  do
+    debug 'processing: %s\n' $file
+    genfiles $file $*
+  done
+}
+
+genfiles() {
+	filename=$1
+  filebasename=$(basename $1)
+  filedirname=$(dirname $1)
+  shift
+  if [ $filedirname = "." ]
+  then
+	  regex="profiles/[^/]+/[0-9]+-${filebasename}"
+	else
+	  regex="profiles/[^/]+/${filedirname}/[0-9]+-${filebasename}"
+	fi
+	capture="s/^(.+\/)*([0-9]+)-.+$/\2:\0/p"
+  files=$(find $* -regex $regex -type f | sed -En $capture | sort)
+  debug "mkdir %s in: %s\n" $filedirname $out
+  [ -z $dryrun ] && mkdir -p $out/$filedirname
+  echo -n > $out/$filename
+  for file in $files
+  do
+    in=$(echo -n $file | cut -d ':' -f 2)
+    debug "%s >> %s\n" $in $out/$filename
+    [ -z $dryrun ] && cat $in >> $out/$filename
+  done
+}
+
+profiles=()
+debug "using output: %s\n" $out
+for p in $*
+do
+	profile=profiles/$p
+  if [ ! -d $profile ]
+  then
+  	die 'Profile %s not found' $profile
+  fi
+	profiles+=($profile)
+done
+debug 'generating profiles: %s\n' ${profiles[@]}
+genprofile ${profiles[@]}
+printf '\ndone\n\n'
+

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+#
+# #synopsis:
+# Remove symlinks pointing to dotmate output directory
+# #description:
+# Removes symlinks in user's home directory leading to generated dotfiles in dotmate output directory
+# For safety, only symlinks are removed.
+# #usage:
+# #
+#
+
+hdir=$HOME
+out=out
+switch="$1"
+
+case "$switch" in
+"--dry-run" )
+	dryrun=1
+	shift
+	;;
+"--home" )
+  hdir="$2"
+  shift
+  shift
+  ;;
+"" )
+  ;;
+* )
+	die "unknown switch '$switch'"
+	;;
+esac
+
+files=$(find $out/ -type f -printf '%P\n')
+for file in $files
+do
+  debug 'processing: %s\n' $file
+  source=$out/$file
+  target=$hdir/$file
+  debug 'verifing: %s\n' $target
+  if [ -h $target ] && [ $target -ef $source ]
+  then
+    debug 'unlinking: %s\n' $target
+    [ -z $dryrun ] && rm $target
+  else
+    notify 'skipping: %s' $target
+  fi
+done
+

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# #synopsis:
+# List all defined profiles
+# #description:
+# Lists all availeble profiles used to generate dotfiles.
+# #usage:
+# #
+#
+
+regex="profiles/[^+-/].*"
+profiles=$(find profiles/ -maxdepth 1 -mindepth 1 -type d -regex $regex -printf '%f\n' | sort)
+for profile in $profiles
+do
+  printf " * %s\n" $profile
+done
+
+

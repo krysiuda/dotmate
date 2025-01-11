@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+#
+# #synopsis:
+# Describe command line options and commands
+# #description:
+# Dotmate helps you manage "dotfiles", your personal settings
+# stored in multiple hidden files under your home directory.
+# #usage:
+# command
+# #
+#
+
+this=$(readlink -f "$0")
+export basename=$(basename "$this")
+export dirname=$(dirname "$this")
+export basedir=$(cd "$dirname" && pwd)
+
+if [ -t 1 ]
+then
+	export colorbold=$(tput bold)
+	export colorred=$(tput setaf 1)
+	export coloryellow=$(tput setaf 3)
+	export colorgreen=$(tput setaf 2)
+	export colordefault=$(tput sgr0)
+	export clearline=$(tput el 1)
+else
+	export colorbold=""
+	export colorred=""
+	export coloryellow=""
+	export colordefault=""
+	export clearline=""
+fi
+
+notify() {
+	error=$1
+	shift
+	printf "${coloryellow}** ${error}${colordefault}\n" "$@" >&2
+}
+export -f notify
+
+complain() {
+	error=$1
+	shift
+	printf "${colorred}!! ${error}${colordefault}\n" "$@" >&2
+}
+export -f complain
+
+die() {
+	error=$1
+	shift
+	printf "${colorred}!! ${error}${colordefault}\n/exiting/\n" "$@" >&2
+	exit 100
+}
+export -f die
+
+if [ -z "$DOTMATE_DEBUG" ]
+then
+	debug() {
+		return #no-op
+	}
+else
+	debug() {
+		printf "$@"
+	}
+fi
+export -f debug
+
+command="$1"
+shift
+args="$@"
+if [ -z "$command" ]
+then
+	command="help"
+elif [ "$command" == "help" ] && [ $# -lt 1 ]
+then
+  args="help"
+fi
+debug "running dotmate command: %s\n" $command
+execpath=${basedir}/${basename}-${command}
+if [ ! -x "$execpath" ]
+then
+	die "unknown command '%s'" $command
+fi
+exec $execpath $args
+
