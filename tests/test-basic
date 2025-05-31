@@ -1,0 +1,7 @@
+given home-installation
+given stacked-file
+
+when dotmate-generate-and-link
+
+expect stacked-file
+

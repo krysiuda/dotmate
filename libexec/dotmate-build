@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 #
-#
 # #synopsis:
 # Performs in order: unlink, clean, generate, link
 # #description:
@@ -13,38 +12,96 @@
 # #
 #
 
-switch="$1"
+dotmatebuild() {
+	local dryrun=""
+	local draft=""
+	local switch="$1"
+	debug " draft=%s dryrun=%s switch=%s\n" "$draft" "$dryrun" "$switch"
 
-case "$switch" in
-"--dry-run" )
-	dryrun=1
-	;;
-"--draft" )
-  draft=1
-  ;;
-"" )
-  ;;
-* )
-	die "unknown switch '$switch'"
-	;;
-esac
+	case "$switch" in
+	"--dry-run" )
+		dryrun="1"
+		shift
+		;;
+	"--draft" )
+		draft="1"
+		shift
+		;;
+	"--"* )
+		die "unknown switch '$switch'"
+		;;
+	* )
+		;;
+	esac
+	debug " draft=%s dryrun=%s\n" "$draft" "$dryrun"
 
-unlinkpath=${basedir}/${basename}-unlink
-cleanpath=${basedir}/${basename}-clean
-generatepath=${basedir}/${basename}-generate
-linkpath=${basedir}/${basename}-link
+	local unlinkpath=${basedir}/${basename}-unlink
+	local cleanpath=${basedir}/${basename}-clean
+	local generatepath=${basedir}/${basename}-generate
+	local linkpath=${basedir}/${basename}-link
 
-[ -z $draft ] && [ -n $dryrun ] && source "$unlinkpath" --dry-run
-[ -z $draft ] && [ -z $dryrun ] && source "$unlinkpath"
+	debug "step 1: unlink draft=%s dryrun=%s\n" "$draft" "$dryrun"
+	if [ -z $dryrun ]
+	then
+		if [ -z $draft ]
+		then
+			source "$unlinkpath"
+			dotmateunlink
+		else
+			debug "step 1: skiping\n"
+		fi
+	else
+		source "$unlinkpath"
+		dotmateunlink --dry-run
+	fi
+	debug "step 1: done\n"
 
-[ -n $draft ] &&                   source "$cleanpath" --draft
-[ -z $draft ] && [ -n $dryrun ] && source "$cleanpath" --dry-run
-[ -z $draft ] && [ -z $dryrun ] && source "$cleanpath"
+	debug "step 2: clean\n"
+	source "$cleanpath"
+	if [ -z $dryrun ]
+	then
+		if [ -z $draft ]
+		then
+			dotmateclean
+		else
+			dotmateclean --draft
+		fi
+	else
+		dotmateclean --dry-run
+	fi
+	debug "step 2: done\n"
 
-[ -n $draft ] &&                   source "$generatepath" --draft "$@"
-[ -z $draft ] && [ -n $dryrun ] && source "$generatepath" --dry-run "$@"
-[ -z $draft ] && [ -z $dryrun ] && source "$generatepath" "$@"
+	debug "step 3: generate\n"
+	source "$generatepath"
+	if [ -z $dryrun ]
+	then
+		if [ -z $draft ]
+		then
+			dotmategenerate "$@"
+		else
+			dotmategenerate --draft "$@"
+		fi
+	else
+		dotmategenerate --dry-run "$@"
+	fi
+	debug "step 3: done\n"
 
-[ -z $draft ] && [ -n $dryrun ] && source "$linkpath" --dry-run
-[ -z $draft ] && [ -z $dryrun ] && source "$linkpath"
+	debug "step 4: link\n"
+	if [ -z $dryrun ]
+	then
+		if [ -z $draft ]
+		then
+			source "$linkpath"
+			dotmatelink
+		else
+			debug "step 4: skiping\n"
+		fi
+	else
+		source "$linkpath"
+		dotmatelink --dry-run
+	fi
+	debug "step 4: done\n"
+}
+
+isrunning "dotmate-build" && dotmatebuild "$@"
 

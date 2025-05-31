@@ -1,0 +1,7 @@
+given home-installation
+given stacked-file
+
+when dotmate-build
+
+expect stacked-file
+

@@ -1,0 +1,3 @@
+hash=$(sha256sum $HOME/simplefile | cut -f 1 -d ' ')
+[ $hash = "6906bdc9ade51da35deef2565dcfe4c7d5daff783c18a59ef73ddd0fcd16d9ca" ]
+

@@ -3,46 +3,59 @@
 # #synopsis:
 # Remove symlinks pointing to dotmate output directory
 # #description:
-# Removes symlinks in user's home directory leading to generated dotfiles in dotmate output directory
+# Removes symlinks in user's home directory leading to generated dotfiles in
+# dotmate output directory.
 # For safety, only symlinks are removed.
+# 
+# --dry-run run without performing any changes.
+# --home    uses the given path as home directory.
 # #usage:
+# [--dry-run|--home path]
 # #
 #
 
-hdir=$HOME
-out=out
-switch="$1"
+dotmateunlink() {
+	local hdir=$HOME
+	local dryrun=""
+	local out="out"
+	local switch="$1"
 
-case "$switch" in
-"--dry-run" )
-	dryrun=1
-	shift
-	;;
-"--home" )
-  hdir="$2"
-  shift
-  shift
-  ;;
-"" )
-  ;;
-* )
-	die "unknown switch '$switch'"
-	;;
-esac
+	case "$switch" in
+	"--dry-run" )
+		dryrun="1"
+		shift
+		;;
+	"--home" )
+		hdir="$2"
+		shift 2
+		;;
+	"" )
+		;;
+	* )
+		die "unknown switch '$switch'"
+		;;
+	esac
 
-files=$(find $out/ -type f -printf '%P\n')
-for file in $files
-do
-  debug 'processing: %s\n' $file
-  source=$out/$file
-  target=$hdir/$file
-  debug 'verifing: %s\n' $target
-  if [ -h $target ] && [ $target -ef $source ]
-  then
-    debug 'unlinking: %s\n' $target
-    [ -z $dryrun ] && rm $target
-  else
-    notify 'skipping: %s' $target
-  fi
-done
+	local files=$(find $out/ -type f -printf '%P\n')
+	for file in $files
+	do
+		debug "processing: %s dryrun=%s hdir=%s\n" $file $dryrun $hdir
+		local source=$out/$file
+		local target=$hdir/$file
+		debug "verifing: %s\n" $target
+		if [ -h $target ] && [ $target -ef $source ]
+		then
+			if [ -z $dryrun ]
+			then
+				debug "rm: %s\n" $target
+				rm $target
+			fi
+		else
+			notify "skipping: %s" $target
+		fi
+	done
+	debug "unlinking done\n"
+}
+
+isrunning "dotmate-unlink" && dotmateunlink "$@"
 

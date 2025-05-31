@@ -8,11 +8,16 @@
 # #
 #
 
-basenamelen=$(($(echo $basename | wc -c) + 1))
-commands=$(find ${basedir}/ -type f -name ${basename}-* -executable -printf '%f\n' | cut -c ${basenamelen}- | sort)
-helppath=${basedir}/${basename}-help
-for command in $commands
-do
-  source "$helppath" --short $command
-done
+dotmatecommands() {
+	local basenamelen=$(($(echo $basename | wc -c) + 1))
+	local commands=$(find ${basedir}/ -type f -name ${basename}-* -executable -printf '%f\n' | cut -c ${basenamelen}- | sort)
+	local helppath=${basedir}/${basename}-help
+	source "$helppath"
+	for command in "$commands"
+	do
+		dotmatehelp --short "$command"
+	done
+}
+
+isrunning "dotmate-commands" && dotmatecommands "$@"
 

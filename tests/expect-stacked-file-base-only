@@ -1,0 +1,3 @@
+hash=$(sha256sum $HOME/.stacked | cut -f 1 -d ' ')
+[ $hash = "ef6bb500acdbe57a8fcf141c2f6f831e4deedc19600d049a8f86405fbcfb80de" ]
+

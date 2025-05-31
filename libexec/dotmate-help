@@ -6,6 +6,7 @@
 # Displays a description of dotmate commands listed as parameters.
 # 
 #       --usage  displays the possible command line parameters and options
+#       --short  displays only the synopsis
 # --description  displays only the description
 #        --full  displays command synopsis, usage and full description
 # 
@@ -16,91 +17,104 @@
 # #
 #
 
-usage=1
-synopsis=
-description=1
-
-switch="$1"
-case "$switch" in
-"--usage" )
-  usage=1
-  synopsis=
-  description=
-  shift
-  ;;
-"--short" )
-  usage=
-  synopsis=1
-  description=
-  shift
-  ;;
-"--full" )
-  usage=1
-  synopsis=1
-  description=1
-  shift
-  ;;
-"--"* )
-	die "unknown switch '$switch'"
-	;;
-esac
-
 catcut() {
-  cat $1 | sed -n 's/^# \(.*\)$/\1/mp' | sed -n "/#$2:/,/#/{//!p;}"
+ 	cat $1 | sed -n 's/^# \(.*\)$/\1/mp' | sed -n "/#$2:/,/#/{//!p;}"
 }
 
 printhelp() {
-  if [ ! -x "$execpath" ]
-  then
-  	die "unknown command '$command'"
-  fi
-  if [ -n "$synopsis" ]
-  then
-    text=$(catcut $execpath 'synopsis')
-    textlen=$(echo $text | wc -l)
-    if [ $textlen -gt 0 ]
-    then
-      printf "${colorbold}%15s${colordefault}  %s\n" $command "$text"
-    fi
-  fi
-  if [ -n "$usage" ]
-  then
-    text=$(catcut $execpath 'usage')
-    textlen=$(echo $text | wc -l)
-    if [ $textlen -gt 0 ]
-    then
-      printf "Usage:\n  %s ${colorbold}%s${colordefault} %s\n\n" $basename $command "$text"
-    fi
-  fi
-  if [ -n "$description" ]
-  then
-    text=$(catcut $execpath 'description')
-    textlen=$(echo $text | wc -l)
-    if [ $textlen -gt 0 ]
-    then
-      printf '%s\n\n' "$text"
-    fi
-  fi
+	if [ ! -x "$1" ]
+	then
+		die "unknown command '$command'"
+	fi
+	if [ -n "$synopsis" ]
+	then
+		text=$(catcut $1 'synopsis')
+		textlen=$(echo $text | wc -l)
+		if [ $textlen -gt 0 ]
+		then
+			printf "${colorbold}%15s${colordefault}  %s\n" \
+				$command "$text"
+		fi
+	fi
+	if [ -n "$usage" ]
+	then
+		text=$(catcut $1 'usage')
+		textlen=$(echo $text | wc -l)
+		if [ $textlen -gt 0 ]
+		then
+			printf "Usage:\n  %s ${colorbold}%s${colordefault} %s\n\n" \
+				$basename $command "$text"
+		fi
+	fi
+	if [ -n "$description" ]
+	then
+		text=$(catcut $1 'description')
+		textlen=$(echo $text | wc -l)
+		if [ $textlen -gt 0 ]
+		then
+			printf '%s\n\n' "$text"
+		fi
+	fi
 }
 
-if [ $# -lt 1 ]
-then
-	versionpath=${basedir}/${basename}-version
-	source "$versionpath"
-	echo
-  execpath=${basedir}/${basename}
-  printhelp
-	echo "Try \"dotmate commands\" or \"dotmate help\""
-	echo
-	helppath=${basedir}/${basename}-help
-	source "$helppath" --short commands help
-fi
+dotmatehelp() {
+	local usage=1
+	local synopsis=
+	local description=1
 
-while [ $# -gt 0 ]
-do
-  command=$1
-  execpath=${basedir}/${basename}-${command}
-  printhelp
-  shift
-done
+	local switch="$1"
+	case "$switch" in
+	"--usage" )
+		usage=1
+		synopsis=
+		description=
+		shift
+		;;
+	"--short" )
+		usage=
+		synopsis=1
+		description=
+		shift
+		;;
+	"--full" )
+		usage=1
+		synopsis=1
+		description=1
+		shift
+		;;
+	"--description" )
+		usage=
+		synopsis=
+		description=1
+		shift
+		;;
+	"--"* )
+		die "unknown switch '$switch'"
+		;;
+	esac
+
+	if [ $# -lt 1 ]
+	then
+		local versionpath=${basedir}/${basename}-version
+		source "$versionpath"
+		dotmateversion
+		echo
+		execpath=${basedir}/${basename}
+		printhelp $execpath
+		echo "Try \"dotmate commands\" or \"dotmate help\""
+		echo
+		#helppath=${basedir}/${basename}-help
+		dotmatehelp --short commands help
+	fi
+
+	while [ $# -gt 0 ]
+	do
+		command="$1"
+		execpath=${basedir}/${basename}-${command}
+		printhelp $execpath
+		shift
+	done
+}
+
+isrunning "dotmate-help" "dotmate---help" "dotmate--h" && dotmatehelp "$@"
 

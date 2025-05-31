@@ -1,0 +1,4 @@
+cd
+mkdir bin
+cp -r $DOTMATE_INSTALLATION bin/
+export PATH=$(pwd)/bin/dotmate/bin:$PATH

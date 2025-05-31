@@ -8,4 +8,10 @@
 # #
 #
 
-echo ${basename} 0.1
+dotmateversion() {
+	local version=$(cat ${basedir}/version)
+	printf "%s %s\n" "${basename}" "${version}"
+}
+
+isrunning "dotmate-version" "dotmate---version" "dotmate--v" && dotmateversion "$@"
+

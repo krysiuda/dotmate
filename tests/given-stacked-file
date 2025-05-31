@@ -1,0 +1,19 @@
+set -ex
+mkdir bin/dotmate/profiles/base
+mkdir bin/dotmate/profiles/extension
+cat > bin/dotmate/profiles/base/10-.stacked << EOF
+this
+file
+EOF
+cat > bin/dotmate/profiles/extension/20-.stacked << EOF
+is
+EOF
+cat > bin/dotmate/profiles/base/30-.stacked << EOF
+made
+of
+EOF
+cat > bin/dotmate/profiles/extension/35-.stacked << EOF
+four
+files
+EOF
+

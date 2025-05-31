@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -ex
+
+when() {
+	source $DOTMATE_INSTALLATION/tests/when-$1
+}
+
+expect() {
+	source $DOTMATE_INSTALLATION/tests/expect-$1
+}
+
+given() {
+	source $DOTMATE_INSTALLATION/tests/given-$1
+}
+
+source $1
+

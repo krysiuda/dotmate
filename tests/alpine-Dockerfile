@@ -1,0 +1,11 @@
+FROM alpine
+
+ENV DOTMATE_INSTALLATION=/opt/dotmate
+COPY . /opt/dotmate
+
+RUN adduser -D test1
+RUN apk add bash
+RUN apk add findutils
+RUN apk add sed
+USER test1
+

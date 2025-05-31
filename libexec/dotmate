@@ -14,6 +14,7 @@ this=$(readlink -f "$0")
 export basename=$(basename "$this")
 export dirname=$(dirname "$this")
 export basedir=$(cd "$dirname" && pwd)
+cd $(dirname "$dirname")
 
 if [ -t 1 ]
 then
@@ -32,26 +33,41 @@ else
 fi
 
 notify() {
-	error=$1
+	local error="$1"
 	shift
 	printf "${coloryellow}** ${error}${colordefault}\n" "$@" >&2
 }
 export -f notify
 
 complain() {
-	error=$1
+	local error="$1"
 	shift
 	printf "${colorred}!! ${error}${colordefault}\n" "$@" >&2
 }
 export -f complain
 
 die() {
-	error=$1
+	local error="$1"
 	shift
 	printf "${colorred}!! ${error}${colordefault}\n/exiting/\n" "$@" >&2
 	exit 100
 }
 export -f die
+
+isrunning() {
+	local actual=$(basename "$0")
+	while [ $# -gt 0 ]
+	do
+		local expected="$1"
+		if [ "$expected" == "$actual" ]
+		then
+			return 0
+		fi
+		shift
+	done
+	return -1
+}
+export -f isrunning
 
 if [ -z "$DOTMATE_DEBUG" ]
 then
@@ -60,7 +76,7 @@ then
 	}
 else
 	debug() {
-		printf "$@"
+		printf "$@" >&2
 	}
 fi
 export -f debug
@@ -73,9 +89,9 @@ then
 	command="help"
 elif [ "$command" == "help" ] && [ $# -lt 1 ]
 then
-  args="help"
+	args="help"
 fi
-debug "running dotmate command: %s\n" $command
+debug "running dotmate command: %s in dir %s\n" $command $(pwd)
 execpath=${basedir}/${basename}-${command}
 if [ ! -x "$execpath" ]
 then

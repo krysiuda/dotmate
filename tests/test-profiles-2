@@ -1,0 +1,6 @@
+given home-installation
+given stacked-file
+
+result=$(when dotmate-profiles | wc -l)
+[ $result = "2" ]
+

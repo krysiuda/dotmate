@@ -1,0 +1,4 @@
+export DOTMATE_DEBUG=1
+dotmate generate base extension
+dotmate link
+

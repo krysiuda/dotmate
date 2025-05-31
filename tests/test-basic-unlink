@@ -1,0 +1,8 @@
+given home-installation
+given stacked-file
+
+when dotmate-build
+when dotmate-unlink
+
+expect no-stacked-file
+

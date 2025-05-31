@@ -8,11 +8,14 @@
 # #
 #
 
-regex="profiles/[^+-/].*"
-profiles=$(find profiles/ -maxdepth 1 -mindepth 1 -type d -regex $regex -printf '%f\n' | sort)
-for profile in $profiles
-do
-  printf " * %s\n" $profile
-done
+dotmateprofiles() {
+	local regex="profiles/[^+-/].*"
+	local profiles=$(find profiles/ -maxdepth 1 -mindepth 1 -type d -regex $regex -printf '%f\n' | sort)
+	for profile in $profiles
+	do
+		printf " * %s\n" $profile
+	done
+}
 
+isrunning "dotmate-profiles" && dotmateprofiles "$@"
 

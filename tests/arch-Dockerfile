@@ -1,0 +1,8 @@
+FROM archlinux
+
+ENV DOTMATE_INSTALLATION=/opt/dotmate
+COPY . /opt/dotmate
+
+RUN useradd -m test1
+USER test1
+

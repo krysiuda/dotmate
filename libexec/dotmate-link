@@ -4,49 +4,56 @@
 # Create or update symlinks to dotmate output directory
 # #description:
 # Creates symlinks in user's home directory leading to generated dotfiles in dotmate output directory.
-# --dry-run logs changes to the conssole, without performing any changes.
+# 
+# --dry-run run without performing any changes.
 # --home    uses the given path as home directory.
 # #usage:
 # [--dry-run|--home path]
 # #
 #
 
-hdir=$HOME
-out=out
-switch="$1"
+dotmatelink() {
+	local hdir=$HOME
+	local dryrun=""
+	local out="out"
+	local switch="$1"
 
-case "$switch" in
-"--dry-run" )
-	dryrun=1
-	shift
-	;;
-"--home" )
-  hdir="$2"
-  shift
-  shift
-  ;;
-"" )
-  ;;
-* )
-	die "unknown switch '$switch'"
-	;;
-esac
+	case "$switch" in
+	"--dry-run" )
+		dryrun=1
+		shift
+		;;
+	"--home" )
+		hdir="$2"
+		shift 2
+		;;
+	"" )
+		;;
+	* )
+		die "unknown switch '$switch'"
+		;;
+	esac
 
-files=$(find $out/ -type f -printf '%P\n')
-for file in $files
-do
-  debug 'processing: %s\n' $file
-  fb=$(basename $file)
-  fd=$(dirname $file)
-  debug "mkdir %s\n" $hdir/$fd
-  [ -z $dryrun ] && mkdir -p $hdir/$fd
-  target=$hdir/$file
-  debug "%s << %s\n" $out/$file $target
-  if [ ! -e $target ] || [ -L $target ]
-  then
-    [ -z $dryrun ] && ln -srf $out/$file $target
-  else
-    notify '%s exists, skipping' $target
-  fi
-done
+	local files=$(find $out/ -type f -printf '%P\n')
+	for file in $files
+	do
+		debug "processing: %s dryrun=%s hdir=%s\n" "$file" "$dryrun" "$hdir"
+		local fb=$(basename $file)
+		local fd=$(dirname $file)
+		debug "mkdir %s\n" $hdir/$fd
+		[ -z $dryrun ] && mkdir -p $hdir/$fd
+		local target=$hdir/$file
+		if [ ! -e $target ] || [ -L $target ]
+		then
+			debug "ln %s %s\n" "$out/$file" "$target"
+			outbase=$(pwd)
+			[ -z $dryrun ] && ln -sf "$outbase/$out/$file" "$target"
+		else
+			notify "%s exists, skipping" $target
+		fi
+	done
+	debug "linking done\n"
+}
+
+isrunning "dotmate-link" && dotmatelink "$@"
 

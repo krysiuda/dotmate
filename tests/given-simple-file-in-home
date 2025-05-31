@@ -1,0 +1,7 @@
+set -ex
+cat > $HOME/simplefile << EOF
+this
+file
+is not modified
+EOF
+

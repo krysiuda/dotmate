@@ -1,0 +1,8 @@
+given home-installation
+given simple-file
+given simple-file-in-home
+
+when dotmate-build-base
+
+expect oryginal-simple-file-in-home
+

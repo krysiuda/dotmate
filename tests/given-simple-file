@@ -1,0 +1,13 @@
+set -ex
+mkdir bin/dotmate/profiles/base
+cat > bin/dotmate/profiles/base/10-simplefile << EOF
+this
+file
+EOF
+mkdir bin/dotmate/profiles/base/subdir
+cat > bin/dotmate/profiles/base/subdir/10-simplefile << EOF
+the
+subdir
+file
+EOF
+
